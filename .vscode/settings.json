@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "MLTable": "yaml",
+        "string": "cpp",
+        "cstring": "cpp"
+    }
+}
