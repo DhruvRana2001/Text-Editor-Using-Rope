@@ -8,7 +8,9 @@ GitHub: https://github.com/DhruvRana1215/Text-Editor-Using-Rope
 
 Introduction:
 
-In the realm of data structures, the rope data structure stands out as an efficient way to handle large strings by breaking them into smaller, more manageable pieces. In this project, we propose the development of a simple text editor utilizing the rope data structure. This project aims to provide a hands-on understanding of data structures and text editing algorithms.
+In the realm of data structures, the rope data structure stands out as an efficient way to handle large strings by breaking them into smaller, 
+more manageable pieces. In this project, we propose the development of a simple text editor utilizing the rope data structure. This project 
+aims to provide a hands-on understanding of data structures and text editing algorithms.
 
 Objectives:
 
