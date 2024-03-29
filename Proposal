@@ -1,0 +1,62 @@
+Text Editor Using Rope
+
+Group 6 Members: 
+Aditya Kesari (RUID: 201002035, GitHub: ayetida21)
+Dhruv Rana (RUID: 209001759, GitHub: DhruvRana1215)
+
+GitHub: https://github.com/DhruvRana1215/Text-Editor-Using-Rope  
+
+Introduction:
+
+In the realm of data structures, the rope data structure stands out as an efficient way to handle large strings by breaking them into smaller, more manageable pieces. In this project, we propose the development of a simple text editor utilizing the rope data structure. This project aims to provide a hands-on understanding of data structures and text editing algorithms.
+
+Objectives:
+
+Implement a basic text editor interface allowing users to create, edit, and save text documents.
+Utilize the rope data structure to efficiently handle large strings and support text editing operations such as insertion, deletion, and concatenation.
+Enable essential features like undo/redo functionality, cursor movement, and text selection.
+Optimize the editor's performance to ensure responsiveness, even with large text documents.
+Develop a user-friendly graphical interface for seamless interaction.
+
+
+Proposed Technologies:
+
+Programming Language: C++
+GUI Toolkit: Tkinter (for simplicity and ease of integration)
+Rope Data Structure Implementation: Custom implementation or utilizing existing utilizing existing libraries (e.g., Boost C++ Libraries)
+Version Control: Git (for collaboration and version management)
+
+
+Scope of Work:
+
+Phase 1: Setup and Basic Interface Implementation
+Set up the project repository and environment.
+Implement a basic graphical interface using Tkinter.
+Create functionality for creating, opening, editing, and saving text documents.
+
+Phase 2: Rope Data Structure Integration
+Research and understand the rope data structure.
+Implement rope data structure operations for text manipulation (e.g., insertion, deletion, concatenation).
+Integrate rope data structure with the text editor to handle document operations efficiently.
+
+Phase 3: Advanced Features Implementation
+Develop undo/redo functionality using an appropriate data structure (e.g., stack).
+Implement cursor movement and text selection functionality.
+Ensure proper handling of edge cases and boundary conditions.
+
+Phase 4: Performance Optimization and Testing
+Profile the application for performance bottlenecks.
+Optimize rope data structure operations for efficiency.
+Conduct thorough testing to ensure the editor's stability and responsiveness with large text documents.
+
+Phase 5: User Interface Refinement and Documentation
+Refine the graphical interface for improved user experience.
+Document the project including usage instructions, implementation details, and explanations of algorithms used.
+Prepare a presentation outlining the project's objectives, implementation, and outcomes.
+
+
+Deliverables:
+
+A functional text editor, with the source code repository on GitHub.
+Documentation covering project details, usage instructions, and algorithm explanations.
+
