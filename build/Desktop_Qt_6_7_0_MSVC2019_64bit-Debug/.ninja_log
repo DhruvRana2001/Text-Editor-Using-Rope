@@ -1,0 +1,12 @@
+# ninja log v5
+7	1145	7346600404456772	Text-Editor-Using-Rope_autogen/timestamp	846197cca2fda308
+7	1145	7346600404456772	Text-Editor-Using-Rope_autogen/mocs_compilation.cpp	846197cca2fda308
+7	1145	7346600404456772	C:/Users/dhruv/Desktop/Text-Editor-Using-Rope/build/Desktop_Qt_6_7_0_MSVC2019_64bit-Debug/Text-Editor-Using-Rope_autogen/timestamp	846197cca2fda308
+7	1145	7346600404456772	C:/Users/dhruv/Desktop/Text-Editor-Using-Rope/build/Desktop_Qt_6_7_0_MSVC2019_64bit-Debug/Text-Editor-Using-Rope_autogen/mocs_compilation.cpp	846197cca2fda308
+1147	1530	7346600409701684	Text-Editor-Using-Rope_autogen/EWIEGA46WW/qrc_ropey.cpp	67571013679b31d8
+1147	1530	7346600409701684	C:/Users/dhruv/Desktop/Text-Editor-Using-Rope/build/Desktop_Qt_6_7_0_MSVC2019_64bit-Debug/Text-Editor-Using-Rope_autogen/EWIEGA46WW/qrc_ropey.cpp	67571013679b31d8
+1881	2426	7346600419110747	CMakeFiles/Text-Editor-Using-Rope.dir/Text-Editor-Using-Rope_autogen/EWIEGA46WW/qrc_ropey.cpp.obj	321322ea85f37055
+1892	8973	7346600484635824	CMakeFiles/Text-Editor-Using-Rope.dir/main.cpp.obj	187cb7a91c8ab091
+1870	8982	7346600484625834	CMakeFiles/Text-Editor-Using-Rope.dir/Text-Editor-Using-Rope_autogen/mocs_compilation.cpp.obj	1936e11fd7e5ee44
+1855	9563	7346600490612811	CMakeFiles/Text-Editor-Using-Rope.dir/ropey.cpp.obj	a08b68f3542e9704
+9565	10846	7346600502722003	Text-Editor-Using-Rope.exe	16d59409e371eec4
