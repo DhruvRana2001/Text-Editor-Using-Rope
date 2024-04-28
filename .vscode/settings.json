@@ -2,6 +2,24 @@
     "files.associations": {
         "MLTable": "yaml",
         "string": "cpp",
-        "cstring": "cpp"
+        "cstring": "cpp",
+        "regex": "cpp",
+        "system_error": "cpp",
+        "algorithm": "cpp",
+        "xstring": "cpp",
+        "deque": "cpp",
+        "vector": "cpp",
+        "xmemory": "cpp",
+        "atomic": "cpp",
+        "memory": "cpp",
+        "utility": "cpp",
+        "initializer_list": "cpp",
+        "queue": "cpp",
+        "stack": "cpp",
+        "type_traits": "cpp",
+        "xutility": "cpp",
+        "ostream": "cpp",
+        "ios": "cpp",
+        "xiosbase": "cpp"
     }
 }

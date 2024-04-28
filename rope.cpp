@@ -254,7 +254,6 @@ string replaceNewLine(const string& str)
 string Rope::Node::toString() const
 {
     string str;
-
     if (isLeaf && data != nullptr)
         str = string(data, length);
     else
@@ -637,18 +636,11 @@ Rope::Rope(const char str[], uint32_t len) : root(nullptr)
     vector<pair<char*, uint32_t>> chunks = splitTextIntoChunks(str, len);
 
     for (auto& chunk : chunks) {
-        cout << "Chunk: " << chunk.first << " " << chunk.second << endl << endl;
-        if (chunk.first == nullptr) {
-            continue;
-        }
-
-        Node *newNode = new Node(chunk.first, chunk.second);
-
         if (root == nullptr) {
-            root = newNode;
+            root = new Node(chunk.first, chunk.second);
             continue;
         }
-        root = merge(root, newNode);
+        root = merge(root, new Node(chunk.first, chunk.second));
         delete[] chunk.first; // delete the memory allocated for the chunk
     }
 }
@@ -715,14 +707,14 @@ Rope::Node* Rope::merge(Node* left, Node* right)
 
     if (right == nullptr)   {return left;}
     cout << "Merge" << endl;
-    cout << "Merging : " << (left ? left->toString() : "null") << " and " << (right ? right->toString() : "null") << endl;
+    cout << "Merging : " << left->toString() << " and " << right->toString() << endl;
     Node* newNode = new Node(left, right);
-    cout << "New Node created : " << (newNode ? newNode->toString() : "null") << endl;
+    cout << "New Node created : " << newNode->toString() << endl;
 
     newNode->updateWeight();
     newNode->updateHeight();
 
-    cout << "Update done : " << (newNode ? newNode->toString() : "null") << endl;
+    cout << "Update done : " << newNode->toString() << endl;
     cout << "Height difference : " << abs(int(left->getHeight() - right->getHeight())) << endl;
     if (abs(int(left->getHeight() - right->getHeight())) > 1) {
         //rebalancing - Balancing is only performed when the height difference between subtrees exceeds a certain threshold, reducing unnecessary balancing operations.
@@ -730,7 +722,7 @@ Rope::Node* Rope::merge(Node* left, Node* right)
         newNode = rebalance(newNode);
     }
 
-    cout << "Merged : " << (newNode ? newNode->toString() : "null") << endl;
+    cout << "Merged : " << newNode->toString() << endl;
     return newNode;
 }
 
@@ -751,7 +743,7 @@ std::pair<Rope::Node*, Rope::Node*> Rope::split(Node* node, uint32_t pos)
     }
 
     if (node->getIsLeaf()) {
-        cout << "Splitting A LEAF: " << (node ? node->toString() : "null") << " at " << pos << " w/ length " << node->getLength() << endl;
+        cout << "Splitting A LEAF: " << node->toString() << " at " << pos << " w/ length " << node->getLength() << endl;
         uint32_t len = node->getLength();
         if (pos == 0) {
             return {nullptr, node};
@@ -763,7 +755,7 @@ std::pair<Rope::Node*, Rope::Node*> Rope::split(Node* node, uint32_t pos)
             char* data = node->getData();
             Node* left = new Node(data, pos);
             Node* right = new Node(data + pos, len - pos);
-            cout << "Split done : " << (left ? left->toString() : "null") << " and " << (right ? right->toString() : "null") << endl;
+            cout << "Split done : " << left->toString() << " and " << right->toString() << endl;
             return {left, right};
         }
     }
@@ -772,17 +764,17 @@ std::pair<Rope::Node*, Rope::Node*> Rope::split(Node* node, uint32_t pos)
         uint32_t leftWeight = node->getLeft()->getWeight();
         cout << "leftWeight : " << leftWeight << endl;
         if (pos <= leftWeight) {
-            cout << "goning left and spliting into " << (node->getLeft() != nullptr ? node->getLeft()->toString() : "null") << " at " << pos << " " << endl;
+            cout << "goning left and spliting into " << node->getLeft()->toString() << " at " << pos << " " << endl;
             auto [left, right] = split(node->getLeft(), pos);
-            cout << "left split done : " << (left != nullptr ? (left ? left->toString() : "null") : "null") << " and " << (right != nullptr ? right->toString() : "null") << endl;
-            cout << "returning : " << (left != nullptr ? (left ? left->toString() : "null") : "null") << " and merged (" << (right != nullptr ? right->toString() : "null") << " and " << (node->getRight() ? node->getRight()->toString() : "null") << ")" << endl;
+            cout << "left split done : " << left->toString() << " and " << right->toString() << endl;
+            cout << "returning : " << left ->toString() << " and merged (" << right->toString() << " and " << node->getRight()->toString() << ")" << endl;
             return {left, merge(right, node->getRight())};
         }
         else {
-            cout << "going right and spliting into " << (node->getRight() != nullptr ? node->getRight()->toString() : "null")  << " at " << pos - leftWeight << " " << endl;
+            cout << "going right and spliting into " << node->getRight()->toString() << " at " << pos - leftWeight << " " << endl;
             auto [left, right] = split(node->getRight(), pos - leftWeight);
-            cout << "right split done : " << ( left != nullptr ? (left ? left->toString() : "null") : "null" ) << " and " << ( right != nullptr ? right->toString() : "null" ) << endl;
-            cout << "returning : merged (" << (node->getLeft() ? node->getLeft()->toString() : "null") << " and " << (left != nullptr ? (left ? left->toString() : "null") : "null") << ") and " << (right != nullptr ? right->toString() : "null") << endl;
+            cout << "right split done : " << left->toString() << " and " << right->toString() << endl;
+            cout << "returning : " << node->getLeft()->toString() << " and merged (" << left->toString() << " and " << right->toString() << ")" << endl;
             return {merge(node->getLeft(), left), right};
         }
     }
@@ -822,27 +814,27 @@ Rope::Node* Rope::rebalance(Node* node)
         if (left->balanceFactor() < 0)
             node->setLeft(rotateLeft(left));
 
-        cout << "[1]Left heavy" <<  "Node : " << (node ? node->toString() : "null") << " Left : " << (left ? (left ? left->toString() : "null") : "null") << " Right : " << (right ? right->toString() : "null") << endl;
+        cout << "[1]Left heavy" <<  "Node : " << node->toString() << " Left : " << left->toString() << " Right : " << right->toString() << endl;
         node = rotateRight(node);
-        cout << "[2]Right heavy" <<  "Node : " << (node ? node->toString() : "null") << " Left : " << (left ? (left ? left->toString() : "null") : "null") << " Right : " << (right ? right->toString() : "null") << endl;
+        cout << "[2]Right heavy" <<  "Node : " << node->toString() << " Left : " << left->toString() << " Right : " << right->toString() << endl;
     }
     else if (balance < -1) { // Right heavy
         if (right->balanceFactor() > 0)
             node->setRight(rotateRight(right));
 
-        cout << "[1]Right heavy" <<  "Node : " << (node ? node->toString() : "null") << " Left : " << (left ? (left ? left->toString() : "null") : "null") << " Right : " << (right ? right->toString() : "null") << endl;
+        cout << "[1]Right heavy" <<  "Node : " << node->toString() << " Left : " << left->toString() << " Right : " << right->toString() << endl;
         node = rotateLeft(node);
-        cout << "[2]Left heavy" <<  "Node : " << (node ? node->toString() : "null") << " Left : " << (left ? (left ? left->toString() : "null") : "null") << " Right : " << (right ? right->toString() : "null") << endl;
+        cout << "[2]Left heavy" <<  "Node : " << node->toString() << " Left : " << left->toString() << " Right : " << right->toString() << endl;
     }
 
     node->setLeft(rebalance(node->getLeft()));
     node->setRight(rebalance(node->getRight()));
-    cout << "Rebalanced : " << (node ? node->toString() : "null") << " Left : " << (left ? left->toString() : "null") << " Right : " << (right ? right->toString() : "null") << endl;
+    cout << "Rebalanced : " << node->toString() << " Left : " << left->toString() << " Right : " << right->toString() << endl;
 
     node->updateHeight();
     node->updateWeight();
 
-    cout << "Updated : " << (node ? node->toString() : "null") << " Left : " << (left ? left->toString() : "null") << " Right : " << (right ? right->toString() : "null") << endl;
+    cout << "Updated : " << node->toString() << " Left : " << left->toString() << " Right : " << right->toString() << endl;
 
     return node;
 }
@@ -932,8 +924,6 @@ void Rope::append(const char str[], uint32_t len)
             continue;
         }
 
-        cout << "Appending Chunk : " << chunk.first << " " << chunk.second << endl << endl;
-
         Node* newNode = new Node(chunk.first, chunk.second);
 
         if (root == nullptr) {
@@ -943,8 +933,6 @@ void Rope::append(const char str[], uint32_t len)
         }
         root = merge(root, newNode);
         delete[] chunk.first;
-
-        cout << "Appended Chunk: " << root->toString() << endl << endl;
     }
 }
 
@@ -986,8 +974,6 @@ void Rope::prepend(const char str[], uint32_t len)
             continue;
         }
 
-        cout << "Prepending Chunk : " << chunk.first << " " << chunk.second << endl << endl;
-
         Node* newNode = new Node(chunk.first, chunk.second);
 
         if (root == nullptr) {
@@ -998,8 +984,6 @@ void Rope::prepend(const char str[], uint32_t len)
 
         root = merge(newNode, root);
         delete[] chunk.first;
-
-        cout << "Prepended Chunk: " << root->toString() << endl << endl;
     }
 }
 
@@ -1017,24 +1001,27 @@ void Rope::insert(uint32_t pos, const char str[], uint32_t len)
 
     vector<pair<char*, uint32_t>> chunks = splitTextIntoChunks(str, len);
 
-    uint32_t currentPos = 0;
+    uint32_t adjustedPos, currentPos = 0;
 
     for (auto& chunk : chunks) {
         if (chunk.first == nullptr) {
             continue;
         }
         
-        uint32_t adjustedPos = pos + currentPos;
-
-        cout << "Inserting Chunk : " << chunk.first << " " << chunk.second << " at " << adjustedPos << " where pos is : " << pos << " and currentPos is : " << currentPos << endl << endl;
+        adjustedPos = pos + currentPos;
 
         if (adjustedPos == 0) { // Prepend
             prepend(chunk.first, chunk.second);
+            delete[] chunk.first;
+            continue;
         }
+
         else if (adjustedPos >= root->getWeight()) { // Append
             append(chunk.first, chunk.second);
-            
+            delete[] chunk.first;
+            continue;
         }
+
         else {
             cout << "splitting" << endl;
             auto splitResult = split(root, adjustedPos);
@@ -1048,12 +1035,6 @@ void Rope::insert(uint32_t pos, const char str[], uint32_t len)
         }
 
         currentPos += chunk.second;
-
-        cout << "updated currentPos : " << currentPos << endl;
-
-        delete[] chunk.first;
-
-        cout << "Inserted Chunk: " << root->toString() << endl << endl;
     }
 }
 
@@ -1238,8 +1219,6 @@ vector<pair<char*, uint32_t>> Rope::splitTextIntoChunks(const char* text, uint32
             break;
         }
     }
-
-    return chunks;
 }
 
 /*

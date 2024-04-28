@@ -24,6 +24,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
         ropey.qrc
+        rope.hpp rope.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET Text-Editor-Using-Rope APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

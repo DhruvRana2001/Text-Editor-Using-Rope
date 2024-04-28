@@ -10,12 +10,31 @@ Ropey::Ropey(QWidget *parent)
     ui->setupUi(this);
 
     setCentralWidget(ui->textEdit);
-    setWindowTitle("Ropey");
+    setWindowTitle("Ropey [*]");
     ui->textEdit->setFocus();
 
     setupStatusTips();
     setupShortcuts();
     setupConnections();
+
+    readSettings();
+
+    connect(ui->textEdit->document(), &QTextDocument::contentsChanged,
+        this, &Ropey::documentWasModified);
+
+    connect(ui->textEdit->document(), &QTextDocument::modificationChanged,
+            this, &Ropey::handleModificationChanged);
+
+#ifndef QT_NO_SESSIONMANAGER
+    //QGuiApplication::setFallbackSessionManagementEnabled(false);
+    connect(qApp, &QGuiApplication::commitDataRequest,
+            this, &Ropey::commitData);
+#endif
+
+    //Setup Backened
+
+    setCurrentFile(QString());
+    setUnifiedTitleAndToolBarOnMac(true);
 
     ui->statusbar->showMessage("Ready");
 }
@@ -31,7 +50,6 @@ void Ropey::setupShortcuts()
     ui->actionOpen->setShortcut(QKeySequence::Open);
     ui->actionSave->setShortcut(QKeySequence::Save);
     ui->actionSave_As->setShortcut(QKeySequence::SaveAs);
-    //ui->actionPrint->setShortcut(QKeySequence::Print);
     ui->actionUndo->setShortcut(QKeySequence::Undo);
     ui->actionRedo->setShortcut(QKeySequence::Redo);
     ui->actionCut->setShortcut(QKeySequence::Cut);
@@ -46,7 +64,6 @@ void Ropey::setupStatusTips()
     ui->actionOpen->setStatusTip("Open an existing file");
     ui->actionSave->setStatusTip("Save the current file");
     ui->actionSave_As->setStatusTip("Save the current file under a new name");
-    //ui->actionPrint->setStatusTip("Print the current file");
     ui->actionUndo->setStatusTip("Undo the last action");
     ui->actionRedo->setStatusTip("Redo the last undone action");
     ui->actionCut->setStatusTip("Cut the current selection's contents");
@@ -67,9 +84,59 @@ void Ropey::setupConnections()
     connect(ui->actionOpen, &QAction::triggered, this, &Ropey::open);
     connect(ui->actionSave, &QAction::triggered, this, &Ropey::save);
     connect(ui->actionSave_As, &QAction::triggered, this, &Ropey::saveAs);
-    //connect(ui->actionPrint, &QAction::triggered, this, &Ropey::print);
     connect(ui->actionExit, &QAction::triggered, this, &Ropey::close);
-    //connect(ui->actionAbout, &QAction::triggered, this, &Ropey::about);
+}
+
+void Ropey::readSettings()
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+    const QByteArray geometry = settings.value("geometry", QByteArray()).toByteArray();
+    if (geometry.isEmpty()) {
+        const QRect availableGeometry = screen()->availableGeometry();
+        resize(availableGeometry.width() / 3, availableGeometry.height() / 2);
+        move((availableGeometry.width() - width()) / 2,
+             (availableGeometry.height() - height()) / 2);
+    } else {
+        restoreGeometry(geometry);
+    }
+}
+
+void Ropey::writeSettings()
+{
+    QSettings settings(QCoreApplication::organizationName(), QCoreApplication::applicationName());
+    settings.setValue("geometry", saveGeometry());
+}
+
+void Ropey::closeEvent(QCloseEvent *event)
+{
+    if (maybeSave()) {
+        writeSettings();
+        event->accept();
+    } else {
+        event->ignore();
+    }
+}
+
+bool Ropey::maybeSave()
+{
+    if (!ui->textEdit->document()->isModified())
+        return true;
+    
+    const QMessageBox::StandardButton ret
+        = QMessageBox::warning(this, tr("Rope"),
+                               tr("The document has been modified.\n"
+                                  "Do you want to save your changes?"),
+                               QMessageBox::Save | QMessageBox::Discard
+                               | QMessageBox::Cancel);
+    switch (ret) {
+    case QMessageBox::Save:
+        return save();
+    case QMessageBox::Cancel:
+        return false;
+    default:
+        break;
+    }
+    return true;
 }
 
 void Ropey::newFile()
@@ -78,21 +145,66 @@ void Ropey::newFile()
     //TODO : Check if we had a previously opened file that was modified
     // if yes : give  a promt to save it
     // if no : clear the text area
+    if (maybeSave()) {
+        ui->textEdit->clear();
+        setCurrentFile(QString());
+    }
     ui->textEdit->clear();
 }
 
 void Ropey::open()
 {
     qDebug() << "open button clicked";
-    QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open File"),
-                                                    "./",
-                                                    tr("Text files (*.txt);;"
-                                                       "XML files (*.xml);;"
-                                                       "Code files (*.cpp *.hpp *.h *.c);;"
-                                                       "All files (*.*)"));
-    if (!fileName.isEmpty())
-        loadFile(fileName);
+
+    if (maybeSave()) {
+        QString fileName = QFileDialog::getOpenFileName(this,
+                                                        tr("Open File"),
+                                                        "./",
+                                                        tr("Text files (*.txt);;"
+                                                        "XML files (*.xml);;"
+                                                        "Code files (*.cpp *.hpp *.h *.c);;"
+                                                        "All files (*.*)"));
+        if (!fileName.isEmpty())
+            loadFile(fileName);
+    }
+}
+
+bool Ropey::save()
+{
+    qDebug()  << "save button clicked";
+
+    if (curFile.isEmpty()) {
+        return saveAs();
+    } else {
+        return saveFile(curFile);
+    }
+}
+
+bool Ropey::saveAs()
+{
+    qDebug()  << "save As button clicked";
+
+    QFileDialog dialog(this);
+    dialog.setWindowModality(Qt::WindowModal);
+    dialog.setAcceptMode(QFileDialog::AcceptSave);
+    if (dialog.exec() != QDialog::Accepted)
+        return false;
+    return saveFile(dialog.selectedFiles().first());
+}
+
+void Ropey::close()
+{
+    qDebug() << "close button clicked";
+}
+
+void Ropey::documentWasModified()
+{
+    setWindowModified(ui->textEdit->document()->isModified());
+}
+
+void Ropey::handleModificationChanged(bool modified)
+{
+    setWindowModified(modified);
 }
 
 void Ropey::loadFile(const QString &fileName)
@@ -114,7 +226,7 @@ void Ropey::loadFile(const QString &fileName)
     QGuiApplication::restoreOverrideCursor();
 #endif
 
-    //setCurrentFile(fileName);
+    setCurrentFile(fileName);
     statusBar()->showMessage(tr("File loaded"), 2000);
 }
 
@@ -165,31 +277,17 @@ QString Ropey::strippedName(const QString &fullFileName)
     return QFileInfo(fullFileName).fileName();
 }
 
-bool Ropey::save()
+#ifndef QT_NO_SESSIONMANAGER
+void Ropey::commitData(QSessionManager &manager)
 {
-    qDebug()  << "save button clicked";
-
-    if (curFile.isEmpty()) {
-        return saveAs();
+    if (manager.allowsInteraction()) {
+        if (!maybeSave())
+            manager.cancel();
     } else {
-        return saveFile(curFile);
+        // Non-interactive: save without asking
+        if (ui->textEdit->document()->isModified())
+            save();
     }
 }
+#endif
 
-bool Ropey::saveAs()
-{
-    qDebug()  << "saveAs button clicked";
-
-    QFileDialog dialog(this);
-    dialog.setWindowModality(Qt::WindowModal);
-    dialog.setAcceptMode(QFileDialog::AcceptSave);
-    if (dialog.exec() != QDialog::Accepted)
-        return false;
-    return saveFile(dialog.selectedFiles().first());
-}
-
-void Ropey::close()
-{
-    qDebug() << "close button clicked";
-    //close();
-}

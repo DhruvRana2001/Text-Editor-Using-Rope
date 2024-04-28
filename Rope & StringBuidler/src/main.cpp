@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstring>
 #include "rope.hpp"
 
 using namespace std;
@@ -13,61 +14,72 @@ uint32_t getCharSize(const char* str) {
 
 int main() {
     const char* str= "Hello, World!";
-    Rope* rope = new Rope(str, getCharSize(str));
 
+    Rope* rope = new Rope(str, strlen(str));
+    cout << rope->toString() << endl;
+    rope->printTree();
+
+    str = " Trying to append some stuff";
+    rope->append(str, strlen(str));
+    rope->printTree();
     cout << rope->toString() << endl;
 
+    str = " more \n stuff";
+    rope->append(str, strlen(str));
     rope->printTree();
+    cout << rope->toString() << endl;
 
-    rope->append(" Trying to append some stuff", getCharSize(" Trying to append some stuff"));
-
+    str = " testing is it working";
+    rope->append(str, strlen(str));
     rope->printTree();
+    cout << rope->toString() << endl;
 
-    rope->append(" more \n stuff", getCharSize("more \n stuff"));
-
+    str = " more \nlets stuff";
+    rope->append(str, strlen(str));
     rope->printTree();
+    cout << rope->toString() << endl;
 
-    rope->append(" testing is it working", getCharSize(" testing is it working"));
-
+    str = " testing is it working mess";
+    rope->append(str, strlen(str));
     rope->printTree();
+    cout << rope->toString() << endl;
 
-    rope->append(" more \nlets stuff", getCharSize(" more \nlets stuff"));
-
+    str = " one more append";
+    rope->append(str, strlen(str));
     rope->printTree();
+    cout << rope->toString() << endl;
 
-    rope->append(" testing is it working mess", getCharSize(" testing is it working mess"));
-
+    str = " one more append [1]";
+    rope->append(str, strlen(str));
     rope->printTree();
+    cout << rope->toString() << endl;
 
-    rope->append("one more append", getCharSize("one more append"));
-
+    str = " one more append [\n]";
+    rope->append(str, strlen(str));
     rope->printTree();
+    cout << rope->toString() << endl;
 
-    rope->append("one more append [1]", getCharSize("one more append [1]"));
-
+    str = "Trying to insert some stuff ";
+    //rope->prepend(str, strlen(str));
+    rope->insert(0,str, strlen(str));
     rope->printTree();
+    cout << rope->toString() << endl;
 
-    rope->append("one more append [\n]", getCharSize("one more append [\n]]"));
-
+    str = " Lets try to insert. ";
+    //rope->prepend(str, strlen(str));
+    rope->insert(0,str, strlen(str));
     rope->printTree();
+    cout << rope->toString() << endl;
 
-    //rope->prepend("Trying to insert some stuff ", getCharSize("Trying to insert some stuff "));
-    rope->insert(0, "Trying to insert some stuff ", getCharSize("Trying to insert some stuff "));
-
+    str = " @lets see if we can insert in the middle@ ";
+    rope->insert(52, str, strlen(str));
     rope->printTree();
+    cout << rope->toString() << endl;
 
-    //rope->prepend(" Lets try to insert. ", getCharSize(" Lets try to insert. "));
-    rope->insert(0, " Lets try to insert. ", getCharSize(" Lets try to insert. "));
-
+    str = " &l-e-t-s s-e-e i-f w-e c-a-n i-n-s-e-r-t i-n t-h-e m-i-d-d-l-e& ";
+    rope->insert(49+3+3, str, strlen(str));
     rope->printTree();
-
-    rope->insert(52, " @lets see if we can insert in the middle@ ", getCharSize(" @lets see if we can insert in the middle@ "));
-
-    rope->printTree();
-
-    rope->insert(49+3+3, " &lets see if we can insert in the middle& ", getCharSize(" &lets see if we can insert in the middle& "));
-
-    rope->printTree();
+    cout << rope->toString() << endl;
     
     cout << "Rope to string:- " << endl;
     cout << rope->toString() << endl;
