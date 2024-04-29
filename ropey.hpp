@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QMainWindow>
+#include "rope.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -22,6 +23,12 @@ public:
 
     void loadFile(const QString &fileName);
 
+    struct DiffChunk{
+        string text;
+        uint32_t pos;
+        bool isInsertion;
+    };
+
 protected:
     void closeEvent(QCloseEvent *event) override;
 
@@ -32,6 +39,7 @@ private slots:
     bool saveAs();
     void documentWasModified();
     void handleModificationChanged(bool modified);
+    void handleTextChanged();
     void close();
 #ifndef QT_NO_SESSIONMANAGER
     void commitData(QSessionManager &);
@@ -49,6 +57,11 @@ private:
     bool saveFile(const QString &fileName);
     void setCurrentFile(const QString &fileName);
     QString strippedName(const QString &fullFileName);
+
+    vector<vector<uint32_t>> LevistanDistance (const string& str1, const string& str2);
+    vector<DiffChunk> diff(string& str1, string& str2);
+
+    Rope *rope;
 
     QString curFile;
 };

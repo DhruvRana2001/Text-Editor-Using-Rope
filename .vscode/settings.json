@@ -20,6 +20,10 @@
         "xutility": "cpp",
         "ostream": "cpp",
         "ios": "cpp",
-        "xiosbase": "cpp"
+        "xiosbase": "cpp",
+        "iostream": "cpp",
+        "list": "cpp",
+        "xhash": "cpp",
+        "unordered_map": "cpp"
     }
 }

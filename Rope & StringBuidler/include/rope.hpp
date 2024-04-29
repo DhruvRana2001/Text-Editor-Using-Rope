@@ -90,6 +90,7 @@ private:
 public:
     Rope();
     Rope(const char str[], uint32_t len);
+    Rope(Node* node);
     Rope(Node* left, Node* right);
     Rope(const char filename[]);
     ~Rope();
@@ -119,6 +120,7 @@ public:
     
 	void load(const char filename[]);
 	void save(const char filename[]);
+
 
     uint32_t getLength() const;
 

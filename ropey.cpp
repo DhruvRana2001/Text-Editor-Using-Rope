@@ -19,12 +19,6 @@ Ropey::Ropey(QWidget *parent)
 
     readSettings();
 
-    connect(ui->textEdit->document(), &QTextDocument::contentsChanged,
-        this, &Ropey::documentWasModified);
-
-    connect(ui->textEdit->document(), &QTextDocument::modificationChanged,
-            this, &Ropey::handleModificationChanged);
-
 #ifndef QT_NO_SESSIONMANAGER
     //QGuiApplication::setFallbackSessionManagementEnabled(false);
     connect(qApp, &QGuiApplication::commitDataRequest,
@@ -32,6 +26,7 @@ Ropey::Ropey(QWidget *parent)
 #endif
 
     //Setup Backened
+    rope = new Rope();
 
     setCurrentFile(QString());
     setUnifiedTitleAndToolBarOnMac(true);
@@ -73,7 +68,15 @@ void Ropey::setupStatusTips()
 }
 
 void Ropey::setupConnections()
-{
+{   
+    connect(ui->textEdit->document(), &QTextDocument::contentsChanged,
+        this, &Ropey::documentWasModified);
+
+    connect(ui->textEdit->document(), &QTextDocument::modificationChanged,
+            this, &Ropey::handleModificationChanged);
+
+    connect(ui->textEdit, &QTextEdit::textChanged, this, &Ropey::handleTextChanged);
+
     connect(ui->actionUndo, &QAction::triggered, ui->textEdit, &QTextEdit::undo);
     connect(ui->actionRedo, &QAction::triggered, ui->textEdit, &QTextEdit::redo);
     connect(ui->actionCut, &QAction::triggered, ui->textEdit, &QTextEdit::cut);
@@ -119,6 +122,7 @@ void Ropey::closeEvent(QCloseEvent *event)
 
 bool Ropey::maybeSave()
 {
+    qDebug() << "Save if file mdoified : " << ui->textEdit->document()->isModified();
     if (!ui->textEdit->document()->isModified())
         return true;
     
@@ -136,19 +140,24 @@ bool Ropey::maybeSave()
     default:
         break;
     }
+
+    qDebug() << "Returning : True";
     return true;
 }
 
 void Ropey::newFile()
 {
     qDebug() << "new file button";
-    //TODO : Check if we had a previously opened file that was modified
-    // if yes : give  a promt to save it
-    // if no : clear the text area
     if (maybeSave()) {
+        qDebug() << "Deleting rope 1";
+        rope = new Rope();
+        qDebug() << "clear text area 1";
         ui->textEdit->clear();
         setCurrentFile(QString());
     }
+    qDebug() << "Deleting rope";
+    rope = new Rope();
+    qDebug() << "clear text area";
     ui->textEdit->clear();
 }
 
@@ -207,6 +216,135 @@ void Ropey::handleModificationChanged(bool modified)
     setWindowModified(modified);
 }
 
+vector<vector<uint32_t>> Ropey::LevistanDistance (const string& str1, const string& str2) {
+    uint32_t m = str1.size();
+    uint32_t n = str2.size();
+
+    vector<vector<uint32_t>> dp(m + 1, vector<uint32_t>(n + 1, 0));
+
+    for (uint32_t i = 0; i <= m; i++)
+        dp[i][0] = i;
+
+    for (uint32_t j = 0; j <= n; j++)
+        dp[0][j] = j;
+
+    for (uint32_t i = 1; i <= m; i++) {
+        for (uint32_t j = 1; j <= n; j++) {
+            if (str1[i - 1] == str2[j - 1]) {
+                dp[i][j] = dp[i - 1][j - 1]; // Characters match
+            } else {
+                dp[i][j] = min( dp[i - 1][j]+1 ,  // Deletion of str1[i - 1]
+                                dp[i][j - 1]+1 ); // Insertion of str2[j - 1]
+            }
+        }
+    }
+
+    return dp;
+}
+
+vector<Ropey::DiffChunk> Ropey::diff(string& str1, string& str2) {
+
+    vector<Ropey::DiffChunk> diffrences;
+    vector<vector<uint32_t>> dp = LevistanDistance(str1, str2);
+
+    uint32_t i = str1.size();
+    uint32_t j = str2.size();
+
+    string insertChunk = "";
+    string deleteChunk = "";
+
+    while (i > 0 || j > 0) {
+        if (i > 0 && dp[i][j] == dp[i - 1][j] + 1) { // Deletion
+            if (!insertChunk.empty()) {
+                // Insert
+                reverse(insertChunk.begin(), insertChunk.end());
+                diffrences.push_back({insertChunk, i, true});
+                insertChunk = "";
+            }
+            deleteChunk = str1[i - 1] + deleteChunk;
+            i--;
+        }
+        else if (j > 0 && dp[i][j] == dp[i][j - 1] + 1) { // Insertion
+            if (!deleteChunk.empty()) {
+                // Delete
+                diffrences.push_back({deleteChunk, i, false});
+                deleteChunk = "";
+            }
+            insertChunk += str2[j - 1];
+            j--;
+        }
+        else {
+            if (!insertChunk.empty()) {
+                // Insert
+                reverse(insertChunk.begin(), insertChunk.end());
+                diffrences.push_back({insertChunk, i, true});
+                insertChunk = "";
+            }
+            if (!deleteChunk.empty()) {
+                // Delete
+                diffrences.push_back({deleteChunk, i, false});
+                deleteChunk = "";
+            }
+            i--;
+            j--;
+        }
+    }
+
+    if (!deleteChunk.empty()) {
+        // Delete
+        diffrences.push_back({deleteChunk, i, false});
+    }
+
+    if (!insertChunk.empty()) {
+        // Insert
+        reverse(insertChunk.begin(), insertChunk.end());
+        diffrences.push_back({insertChunk, i, true});
+    }
+    
+
+    //reverse(diffrences.begin(), diffrences.end());
+
+    return diffrences;
+}
+
+
+void Ropey::handleTextChanged() {
+
+    // Store the current cursor position
+    QTextCursor cursor = ui->textEdit->textCursor();
+    int cursorPosition = cursor.position();
+    // Store the previous modified status
+    bool wasModified = ui->textEdit->document()->isModified();
+
+    // Disconnect the textChanged signal temporarily
+    disconnect(ui->textEdit, &QTextEdit::textChanged, this, &Ropey::handleTextChanged);
+
+    qDebug() << "Invoked handle text";
+    string curStr = ui->textEdit->toPlainText().toStdString();
+    string prevStr = rope->toString();
+    auto operations = diff(prevStr, curStr);
+
+    for (auto& op : operations) {
+        if (op.isInsertion) {
+            rope->insert(op.pos, op.text.c_str(), op.text.length());
+        } else {
+            rope->remove(op.pos, op.text.size());
+        }
+    }
+
+    qDebug() << "Rope toString : " << rope->toString();
+
+    ui->textEdit->setPlainText(curStr.c_str());
+
+    cursor.setPosition(cursorPosition);
+    ui->textEdit->setTextCursor(cursor);
+    // Restore the modified status
+    ui->textEdit->document()->setModified(wasModified);
+
+    // Reconnect the textChanged signal
+    connect(ui->textEdit, &QTextEdit::textChanged, this, &Ropey::handleTextChanged);
+}
+
 void Ropey::loadFile(const QString &fileName)
 {
     QFile file(fileName);
@@ -217,6 +355,7 @@ void Ropey::loadFile(const QString &fileName)
         return;
     }
 
+    rope = new Rope(fileName.toStdString().c_str());
     QTextStream in(&file);
 #ifndef QT_NO_CURSOR
     QGuiApplication::setOverrideCursor(Qt::WaitCursor);
