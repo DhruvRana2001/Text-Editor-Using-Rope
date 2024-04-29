@@ -1,9 +1,13 @@
+#include <chrono>
+#include "rope.hpp"
+#include "stringBuilder.hpp"
 #include <iostream>
 #include <cstring>
 #include <vector>
 #include <algorithm>
 #include <cassert>
-#include "rope.hpp"
+#include <chrono>
+#include <filesystem>
 
 using namespace std;
 
@@ -136,8 +140,8 @@ void test_diff() {
         {"apple", "aapple"},            // Beginning insertion
     };
 
+    cout << "____________________________" << endl;
     cout << "Testing diff()..." << endl;
-    cout << "------------------" << endl;
 
     for (auto& test_case : edge_cases) {
         string str1 = test_case.first;
@@ -159,286 +163,418 @@ void test_diff() {
     }
 
     cout << "All tests passed successfully!" << endl;
-    cout << "------------------" << endl << endl;
+    cout << "-------------------------------" << endl << endl;
 }
 
 void test_append() {
     Rope rope;
 
+    cout << "____________________________" << endl;
     cout << "Testing append()..." << endl;
-    cout << "------------------" << endl;
     // Test appending to an empty rope
     rope.append("Hello", 5);
     assert(rope.toString() == "Hello");
-
-    cout << "Rope After Appending Hello";
-    rope.printTree();
 
     // Test appending to a non-empty rope
     rope.append(" World", 6);
     assert(rope.toString() == "Hello World");
 
-    cout << "Rope After Appending World";
-    rope.printTree();
-
     cout << "Test append passed successfully!" << endl;
-    cout << "------------------" << endl << endl;
+    cout << "----------------------------------" << endl << endl;
 }
 
 void test_prepend() {
     Rope rope;
 
+    cout << "________________________________" << endl;
     cout << "Testing prepend()..." << endl;
-    cout << "------------------" << endl;
+    
     // Test prepending to an empty rope
     rope.prepend("World", 5);
     assert(rope.toString() == "World");
-
-    cout << "Rope after prepending World";
-    rope.printTree();
 
     // Test prepending to a non-empty rope
     rope.prepend("Hello ", 6);
     assert(rope.toString() == "Hello World");
 
-    cout << "Rope after prepending Hello";
-    rope.printTree();
-
     cout << "Test prepend passed successfully!" << endl;
-    cout << "------------------" << endl << endl;
+    cout << "----------------------------------" << endl << endl;
 }
 
 void test_insert() {
     Rope rope("Hello", 5);
 
+    cout << "____________________________" << endl;
     cout << "Testing insert()..." << endl;
     // Test inserting into an empty rope
     rope.insert(0, "World", 5);
     assert(rope.toString() == "WorldHello");
 
-    cout << "Rope after inserting World" ;
-    rope.printTree();
-
     // Test inserting into the middle of a rope
     rope.insert(5, " ", 1);
     assert(rope.toString() == "World Hello");
-
-    cout << "Rope after inserting space ' ' ";
-    rope.printTree();
 
     // Test inserting at the end of a rope
     rope.insert(11, "!", 1);
     assert(rope.toString() == "World Hello!");
 
-    cout << "Rope after inserting ! ";
-    rope.printTree();
-
     cout << "Test insert passed successfully!" << endl;
-    cout << "------------------" << endl << endl;
+    cout << "--------------------------------" << endl << endl;
 }
 
 void test_remove() {
     Rope rope("Hello World!", 12);
 
+    cout << "___________________________" << endl;
     cout << "Testing remove()..." << endl;
-    cout << "------------------" << endl;
+    
     // Test removing from the beginning of a rope
     rope.remove(0, 6);
     assert(rope.toString() == "World!");
-
-    cout << "Rope after removing 'Hello' ";
-    rope.printTree();
 
     // Test removing from the middle of a rope
     rope.remove(3, 1);
     assert(rope.toString() == "Word!");
 
-    cout << "Rope after removing l ";
-    rope.printTree();
-
     // Test removing from the end of a rope
     rope.remove(4, 2);
     assert(rope.toString() == "Word");
 
-    cout << "Rope after removing '!' ";
-    rope.printTree();
-
     cout << "Test remove passed successfully!" << endl;
-    cout << "------------------" << endl << endl;
+    cout << "--------------------------------" << endl << endl;
 }
 
 void test_cut() {
     Rope rope("Hello World!", 12);
 
-    cout << "Rope before cut: "; rope.printTree();
-
+    cout << "___________________________" << endl;
     cout << "Testing cut()..." << endl;
-    cout << "------------------" << endl;
     // Test cutting from the beginning of a rope
-    Rope cut_rope1 = rope.cut(0, 5);
+    Rope cut_rope1 = *rope.cut(0, 5);
     assert(cut_rope1.toString() == "Hello");
 
-    cout << "Rope after cutting 'Hello' ";
-    cut_rope1.printTree();
-
     // Test cutting from the middle of a rope
-    Rope cut_rope2 = rope.cut(6, 5);
+    Rope cut_rope2 = *rope.cut(6, 5);
     assert(cut_rope2.toString() == "World");
 
-    cout << "Rope after cutting 'World' ";
-    cut_rope2.printTree();
-
     // Test cutting from the end of a rope
-    Rope cut_rope3 = rope.cut(6, 6);
+    Rope cut_rope3 = *rope.cut(6, 6);
     assert(cut_rope3.toString() == "World!");
 
-    cout << "Rope after cutting 'World!' ";
-    cut_rope3.printTree();
-
     cout << "Test cut passed successfully!" << endl;
-    cout << "------------------" << endl << endl;
-
-    /*
-    cout << "Rope after cut: "; rope.printTree();
-    cout << "Deleted cut_rope1" << endl;
-    delete &cut_rope1;
-    */
-
-    cout << "Delete cut_rope2" << endl;
-    delete &cut_rope2;
-
-    cout << "Delete cut_rope3" << endl;
-    delete &cut_rope3;
-
-    cout << "Delete Rope" << endl;
-    delete &rope;
+    cout << "------------------------------" << endl << endl;
 }
 
 void test_paste() {
-    Rope rope1("Hello", 5);
-    Rope rope2(" World", 6);
+    Rope* rope1 = new Rope("Hello", 5);
+    Rope* rope2 = new Rope(" World", 6);
 
+    cout << "______________________________" << endl;
     cout << "Testing paste()..." << endl;
-    cout << "------------------" << endl;
     // Test pasting at the beginning of a rope
-    rope1.paste(0, rope2);
-    assert(rope1.toString() == " WorldHello");
-
-    cout << "Rope after pasting ' World' ";
-    rope1.printTree();
+    rope1->paste(0, rope2);
+    assert(rope1->toString() == " WorldHello");
 
     // Test pasting in the middle of a rope
-    rope1.paste(5, rope2);
-    assert(rope1.toString() == " World WorldHello");
-
-    cout << "Rope after pasting ' World' ";
-    rope1.printTree();
+    rope1->paste(6, rope2);
+    assert(rope1->toString() == " World WorldHello");
 
     // Test pasting at the end of a rope
-    rope1.paste(12, rope2);
-    assert(rope1.toString() == " World WorldHello World");
-
-    cout << "Rope after pasting ' World' ";
-    rope1.printTree();
+    rope1->paste(18, rope2);
+    assert(rope1->toString() == " World WorldHello World");
 
     cout << "Test paste passed successfully!" << endl;
-    cout << "------------------" << endl << endl;
+    cout << "--------------------------------" << endl << endl;
 }
 
 void run_tests() {
+    cout << "*****************************************" << endl;
     cout << "Running Rope tests... " << endl;
-    cout << "***************************" << endl << endl;
+    
 
-    test_cut();
     test_append();
     test_prepend();
     test_insert();
     test_remove();
+    test_cut();
     test_paste();
 
     cout << "All tests passed!" << endl;
-    cout << "*************************" << endl << endl;
+    cout << "*****************************************" << endl << endl;
+}
+
+struct Blocks {
+    uint32_t pos;
+    string text;
+
+    Blocks(uint32_t pos, string text) : pos(pos), text(text){}
+};
+
+vector<Blocks> generateRandomBlocks (uint32_t totalSizeKB, uint32_t chunkSizeKB, uint32_t len)
+{   
+    uint32_t totalSizeBytes = totalSizeKB * 1024;
+    uint32_t chunkSizeBytes = chunkSizeKB * 1024;
+
+    vector<Blocks> blocks;
+    string fullText;
+    srand(time(0));
+    
+    string words [] = {"Lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit",
+             "sed", "do", "eiusmod", "tempor", "incididunt", "ut", "labore", "et", "dolore",
+             "magna", "aliqua", "Ut", "enim", "ad", "minim", "veniam", "quis", "nostrud",
+             "exercitation", "ullamco", "laboris", "nisi", "ut", "aliquip", "ex", "ea", "commodo",
+             "consequat", "Duis", "aute", "irure", "dolor", "in", "reprehenderit", "in", "voluptate",
+             "velit", "esse", "cillum", "dolore", "eu", "fugiat", "nulla", "pariatur", "Excepteur",
+             "sint", "occaecat", "cupidatat", "non", "proident", "sunt", "in", "culpa", "qui",
+             "officia", "deserunt", "mollit", "anim", "id", "est","laborum"}; 
+
+    while (fullText.size() < totalSizeBytes) {
+        uint32_t remainingBytes = totalSizeBytes - blocks.size();
+        uint32_t size = min(remainingBytes, chunkSizeBytes);
+
+        string chunk;
+
+        while (chunk.size() < size) {
+            int length = sizeof(words) / sizeof(words[0]);
+            int wordIndex = rand() % length;
+            string word = words[wordIndex];
+            chunk += word;
+            chunk += ' ';
+        }
+
+        fullText += chunk;
+
+        uint32_t pos = rand() % len;
+
+        blocks.emplace_back(pos, chunk);
+    }
+
+    return blocks;
+}
+
+vector<pair<uint32_t,uint32_t>> generateRemovalPos (uint32_t totalSizeKB, uint32_t chunkSizeKB, uint32_t len)
+{   
+    uint32_t totalSizeBytes = totalSizeKB * 1024;
+    uint32_t chunkSizeBytes = chunkSizeKB * 1024;
+
+    srand(time(0));
+
+    uint32_t totalChunksSize = 0;
+    vector<pair<uint32_t,uint32_t>> Pos;
+    
+    while (totalChunksSize < totalSizeBytes && len > chunkSizeBytes) {
+        uint32_t startPos = rand() % (len-chunkSizeBytes-1);
+        uint32_t endPos = startPos + chunkSizeBytes;
+        totalChunksSize += chunkSizeBytes;
+        len -= chunkSizeBytes;
+        Pos.push_back({startPos, endPos});
+    }
+
+    return Pos;
+}
+
+void benchmark(const string files[], const int num_files) {
+
+    cout << "Starting benchmark for " << num_files << " file(s)..." << endl;
+
+    for (int i = 0; i < num_files; i++) {
+        string file = files[i];
+        
+        ifstream f (file);
+        uint32_t totalSizeKB = f.seekg(0, ios::end).tellg() / 1024;
+
+        cout << "*********************************************************************************************************************************************" << endl;
+        cout << "File: " << file << " of size (" << totalSizeKB << "KB) "<< endl << endl;
+        cout << "___________________________________________________________________________________________________________________________________________" << endl;
+        cout << "Loading file:- " << file << "..." << endl;
+        
+        auto start = chrono::high_resolution_clock::now();
+        StringBuilder sb = StringBuilder();
+        sb.load(file);
+        auto stop = chrono::high_resolution_clock::now();
+        auto duration = chrono::duration_cast<chrono::nanoseconds>(stop - start);
+        cout << "Loading benchmark done for file" << file << " StringBuilder took " << duration.count() << " nanoseconds." << endl;
+
+        start = chrono::high_resolution_clock::now();
+        Rope* rope = new Rope(file.c_str());
+        stop = chrono::high_resolution_clock::now();
+        duration = chrono::duration_cast<chrono::nanoseconds>(stop - start);
+        cout << "Loading benchmark done for file" << file << " of size (" << totalSizeKB << "KB) Rope took " << duration.count() << " nanoseconds." << endl;
+
+        cout << "Testing equality...";
+        assert(sb.toString() == rope->toString());
+        cout << "Passed!" << endl;
+
+        cout << "--------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+
+        cout << "_____________________________________________________________________________________________________________________________________________" << endl;
+        cout << "Appending Benchmark:- " << file << "..." << endl;
+
+        int num_blocks = 30;
+        vector<Blocks> blocks = generateRandomBlocks(totalSizeKB*num_blocks, totalSizeKB, rope->getLength());
+
+        start = chrono::high_resolution_clock::now();
+        for (Blocks block : blocks) {
+            sb.append(block.text);
+        }
+        stop = chrono::high_resolution_clock::now();
+        duration = chrono::duration_cast<chrono::nanoseconds>(stop - start);
+        cout << "Appending benchmark done for file" << file << " StringBuilder took " << duration.count() << " nanoseconds." << endl;
+
+        start = chrono::high_resolution_clock::now();
+        for (Blocks block : blocks) {
+            rope->append(block.text.c_str(), block.text.length());
+        }
+        stop = chrono::high_resolution_clock::now();
+        duration = chrono::duration_cast<chrono::nanoseconds>(stop - start);
+        cout << "Appending benchmark done for file" << file << " Rope took " << duration.count() << " nanoseconds." << endl;
+
+        cout << "Testing equality...";
+        assert(sb.toString() == rope->toString());
+        cout << "Passed!" << endl;
+
+        cout << "----------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+
+
+        cout << "_____________________________________________________________________________________________________________________________________________" << endl;
+        cout << "Insertion Benchmark:- " << file << "..." << endl;
+
+        num_blocks = 30;
+        blocks = generateRandomBlocks(totalSizeKB*num_blocks, totalSizeKB, rope->getLength());
+
+        start = chrono::high_resolution_clock::now();
+        for (Blocks block : blocks) {
+            sb.insert(block.pos, block.text);
+        }
+        stop = chrono::high_resolution_clock::now();
+        duration = chrono::duration_cast<chrono::nanoseconds>(stop - start);
+        cout << "Insertion benchmark done for file" << file << " StringBuilder took " << duration.count() << " nanoseconds." << endl;
+
+        start = chrono::high_resolution_clock::now();
+        for (Blocks block : blocks) {
+            rope->insert(block.pos, block.text.c_str(), block.text.length());
+        }
+        stop = chrono::high_resolution_clock::now();
+        duration = chrono::duration_cast<chrono::nanoseconds>(stop - start);
+        cout << "Insertion benchmark done for file" << file << " Rope took " << duration.count() << " nanoseconds." << endl;
+
+        cout << "Testing equality...";
+        assert(sb.toString() == rope->toString());
+        cout << "Passed!" << endl;
+
+        cout << "----------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+
+
+        cout << "_____________________________________________________________________________________________________________________________________________" << endl;
+        cout << "Removal Benchmark:- " << file << "..." << endl;
+
+        num_blocks = 30;
+        vector<pair<uint32_t,uint32_t>> Pos = generateRemovalPos(totalSizeKB*num_blocks, totalSizeKB, rope->getLength());
+
+        start = chrono::high_resolution_clock::now();
+        for (auto pos : Pos) {
+            sb.remove(pos.first, pos.second-pos.first);
+        }
+        stop = chrono::high_resolution_clock::now();
+        duration = chrono::duration_cast<chrono::nanoseconds>(stop - start);
+        cout << "Removal benchmark done for file" << file << " StringBuilder took " << duration.count() << " nanoseconds." << endl;
+
+        start = chrono::high_resolution_clock::now();
+        for (auto pos : Pos) {
+            rope->remove(pos.first, pos.second-pos.first);
+        }
+        stop = chrono::high_resolution_clock::now();
+        duration = chrono::duration_cast<chrono::nanoseconds>(stop - start);
+        cout << "Removal benchmark done for file" << file << " Rope took " << duration.count() << " nanoseconds." << endl;
+
+        cout << "Testing equality...";
+        assert(sb.toString() == rope->toString());
+        cout << "Passed!" << endl;
+
+        cout << "----------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+
+
+        cout << "*********************************************************************************************************************************************" << endl;
+
+        delete rope;
+    };
+
+
+    cout << "Benchmarking done!" << endl;
+
+}
+
+void demo() {
+    cout << "Starting demo..." << endl<<endl;
+    cout << "*****************************************************************************************************************" << endl;
+
+    string fullText;
+
+    string str = "Hello, World!";
+    
+    fullText.append(str.c_str(), str.length());
+
+    Rope* rope = new Rope(str.c_str(), str.length());
+    rope->printTree();
+    cout << rope->toString() << endl;
+
+    str = " Trying to append some stuff";
+    fullText.append(str.c_str(), str.length());
+    rope->append(str.c_str(), str.length());
+    rope->printTree();
+    cout << rope->toString() << endl << endl;
+
+    str = "Lets try to prepend some stuff ";
+    fullText.insert(0, str.c_str(), str.length());
+    rope->prepend(str.c_str(), str.length());
+    rope->printTree();
+    cout << rope->toString() << endl << endl;
+
+    str = " Does New Line Work? \n If this is on new line it is working";
+    fullText.append(str.c_str(), str.length());
+    rope->append(str.c_str(), str.length());
+    rope->printTree();
+    cout << rope->toString() << endl << endl;
+
+    str = " Trying to insert some stuff ";
+    fullText.insert(44, str.c_str(), str.length());
+    rope->insert(44,str.c_str(), str.length());
+    rope->printTree();
+    cout << rope->toString() << endl;
+
+
+    str = " @lets see if we can insert in the middle@ ";
+    fullText.insert(52, str.c_str(), str.length());
+    rope->insert(52, str.c_str(), str.length());
+    rope->printTree();
+    cout << rope->toString() << endl << endl;
+    
+    cout << endl << "Rope to string:- " << endl;
+    cout << rope->toString() << endl << endl;
+
+    cout << "Testing equality ....  ";
+    assert(rope->toString() == fullText);
+    cout << "Passed!" << endl;
+    cout << "*****************************************************************************************************************" << endl;
+    
+    delete rope;
 }
 
 int main() {
-    /*
-    const char* str= "Hello, World!";
 
-    Rope* rope = new Rope(str, strlen(str));
-    cout << rope->toString() << endl;
-    rope->printTree();
+    string currentDirecotry = filesystem::current_path().string();
+    string fileDirectory = currentDirecotry + "\\benchmark_files\\";
 
-    str = " Trying to append some stuff";
-    rope->append(str, strlen(str));
-    rope->printTree();
-    cout << rope->toString() << endl;
-
-    str = " more \n stuff";
-    rope->append(str, strlen(str));
-    rope->printTree();
-    cout << rope->toString() << endl;
-
-    str = " testing is it working";
-    rope->append(str, strlen(str));
-    rope->printTree();
-    cout << rope->toString() << endl;
-
-    str = " more \nlets stuff";
-    rope->append(str, strlen(str));
-    rope->printTree();
-    cout << rope->toString() << endl;
-
-    str = " testing is it working mess";
-    rope->append(str, strlen(str));
-    rope->printTree();
-    cout << rope->toString() << endl;
-
-    str = " one more append";
-    rope->append(str, strlen(str));
-    rope->printTree();
-    cout << rope->toString() << endl;
-
-    str = " one more append [1]";
-    rope->append(str, strlen(str));
-    rope->printTree();
-    cout << rope->toString() << endl;
-
-    str = " one more append [\n]";
-    rope->append(str, strlen(str));
-    rope->printTree();
-    cout << rope->toString() << endl;
-
-    str = "Trying to insert some stuff ";
-    //rope->prepend(str, strlen(str));
-    rope->insert(0,str, strlen(str));
-    rope->printTree();
-    cout << rope->toString() << endl;
-
-    str = " Lets try to insert. ";
-    //rope->prepend(str, strlen(str));
-    rope->insert(0,str, strlen(str));
-    rope->printTree();
-    cout << rope->toString() << endl;
-
-    str = " @lets see if we can insert in the middle@ ";
-    rope->insert(52, str, strlen(str));
-    rope->printTree();
-    cout << rope->toString() << endl;
-
-    str = " &l-e-t-s s-e-e i-f w-e c-a-n i-n-s-e-r-t i-n t-h-e m-i-d-d-l-e& ";
-    rope->insert(49+3+3, str, strlen(str));
-    rope->printTree();
-    cout << rope->toString() << endl;
-    
-    cout << "Rope to string:- " << endl;
-    cout << rope->toString() << endl;
-    
-
-    delete rope;
-    */
+    const string filenames [] = {
+        fileDirectory + "small.txt",
+        fileDirectory + "medium.txt"
+        //fileDirectory + "large.txt"
+    };
 
     test_diff();
     run_tests();
+    benchmark(filenames, 2);
+    demo();
 
     return 0;
 }

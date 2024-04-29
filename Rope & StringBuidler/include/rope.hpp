@@ -5,7 +5,10 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-
+#include <iostream>
+#include <regex>
+#include <stack>
+#include <fstream>
 
 using namespace std;
 
@@ -35,11 +38,28 @@ private:
         void transversePreOrder(string* str, const Node* node) const;
         string treeTransversePreOrder(Node* node);
         void treeTransverseNodes(string *str, string padding, string pointer, Node* node, bool hasRightChild);
-        
+
+
     public:
         Node(const char str[], uint32_t len);
         Node(Node* left, Node* right);
         ~Node();
+
+        Node(const Node& other) {
+            data = new char[other.length];
+            std::copy(other.data, other.data + other.length, data);
+            length = other.length;
+            weight = other.weight;
+            height = other.height;
+            isLeaf = other.isLeaf;
+            if (other.isLeaf) {
+                left = nullptr;
+                right = nullptr;
+            } else {
+                left = new Node(*other.left);
+                right = new Node(*other.right);
+            }
+        }
 
         uint32_t getWeight() const;
         void updateWeight();
@@ -83,7 +103,7 @@ private:
 
     void setChunkSize(uint32_t size);
 
-    void adjustParameters(uint32_t fileSize);
+    
 
     vector<pair<char*, uint32_t>> splitTextIntoChunks(const char* text, uint32_t len);
 
@@ -95,8 +115,30 @@ public:
     Rope(const char filename[]);
     ~Rope();
 
-    Rope(const Rope& orig) = delete;
-	Rope& operator =(const Rope& orig) = delete;
+    Rope(const Rope& orig) {
+        root = copyNode(orig.root);
+    }
+
+    Rope& operator =(const Rope& orig) {
+        if (this != &orig) {
+            root = copyNode(orig.root);
+        }
+        return *this;
+    }
+
+    Node* copyNode(const Node* node) {
+        if (node == nullptr) {
+            return nullptr;
+        }
+        Node* newNode = new Node(node->getData(), node->getLength());
+        newNode->updateHeight();
+        newNode->updateWeight();
+        newNode->setLeft(copyNode(node->getLeft()));
+        newNode->setRight(copyNode(node->getRight()));
+        return newNode;
+    }
+
+    void adjustParameters(uint32_t fileSize);
 
     void append(const Rope& rope);
     void append(const char s[], uint32_t len);
@@ -110,11 +152,11 @@ public:
 	void remove(uint32_t pos);
 	void remove(uint32_t start, uint32_t length);
 
-	Rope cut(uint32_t minline, uint32_t mincol, uint32_t maxline, uint32_t maxcol);
-    Rope cut(uint32_t start, uint32_t end);
+	Rope* cut(uint32_t minline, uint32_t mincol, uint32_t maxline, uint32_t maxcol);
+    Rope* cut(uint32_t start, uint32_t end);
 
-	void paste(uint32_t start, uint32_t end, const Rope& r);
-    void paste(uint32_t start, const Rope& r);
+	void paste(uint32_t start, uint32_t end, const Rope* r);
+    void paste(uint32_t start, const Rope* r);
 
 	//mark search(const char s[], uint32_t len) const;
     
